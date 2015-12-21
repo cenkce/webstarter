@@ -48,28 +48,6 @@ var globs = manifest.globs;
 var project = manifest.getProjectGlobs();
 
 
-
-//var env = config.production || argv.development;
-
-// Coomon js tasks
-var jsProductionTasks = function (buildName) {
-    return lazypipe()
-        .pipe(function () {
-            return uglify({
-                    compress: {
-                        'drop_debugger': false
-                    }
-                });
-        })
-        .pipe(concat, buildName);
-};
-
-// Coomon js tasks
-var jsProductionTasksConcatOnly = function (buildName) {
-    return lazypipe()
-        .pipe(concat, buildName);
-};
-
 // Coomon  js dev tasks
 var jsDevTasks = function (buildName, path) {
     var isMin = (buildName.indexOf('.min.js') > -1);
@@ -133,10 +111,7 @@ var cssTasks = function (filename) {
         .pipe(concat, filename)
         .pipe(function () {
                 return gulpif(!config.production,
-                                sourcemaps.write('.', {
-                                        sourceRoot: './app/'
-                                    }
-                                   )
+                                sourcemaps.write('.')
                                 );
                 }
         )
@@ -250,15 +225,6 @@ gulp.task('wiredep', function() {
         }))
         .pipe(gulp.dest(path.source + 'styles'));
 });
-
-/*
-gulp.task('build', function(callback) {
-    runSequence('styles',
-        'scripts',
-        ['fonts', 'images'],
-        callback);
-});
-*/
 
 gulp.task('watch', function() {
     gulp.start('apiserver');
