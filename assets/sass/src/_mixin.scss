@@ -1,0 +1,45 @@
+@mixin clearfix() {
+  &:before,
+  &:after {
+    content: " "; // 1
+    display: table; // 2
+  }
+  &:after {
+    clear: both;
+  }
+}
+
+.flex-vertical-align {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  > *{
+    flex: 1;
+  }
+}
+
+.table-vertical-align {
+  display: table;
+  > *{
+    display: table-cell;
+    vertical-align: middle;
+  }
+}
+
+.absolute-vertical-align{
+  position: absolute;
+  > *{
+    top: 50%;
+    position: absolute;
+    transform: translateY(-50%);
+  }
+}
+
+.relative-vertical-align{
+  position: relative;
+  > *{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
