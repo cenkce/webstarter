@@ -14,13 +14,13 @@ Installation
 
 Usage
 ---
-Build project files
+Build project files :
   `$ gulp`
-  or
+  or :
   `$ gulp --production`
 
-And preview via BrowserSync
+And preview via BrowserSync :
   `$ gulp watch`
 
-- Assets and 3rd Parties Management With Manifest Json
+Assets and 3rd Parties Management With Manifest Json :
 ---
