@@ -2,7 +2,7 @@
 
 Web application boilerplate for front-end devlepoers.
 
-Installation
+## Installation ##
 ---
   ```$ git clone git@github.com:cenkce/webstarter.git```
 
@@ -12,15 +12,19 @@ Installation
 - Install Bower requirements
   `$ bower install`
 
-Usage
+## Usage ##
 ---
 Build project files :
+
   `$ gulp`
-  or :
+  
+  or 
+  
   `$ gulp --production`
 
 And preview via BrowserSync :
+
   `$ gulp watch`
 
-Assets and 3rd Parties Management With Manifest Json :
+## Assets and 3rd Parties Management With Manifest Json : ##
 ---
