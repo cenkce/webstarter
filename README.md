@@ -1,4 +1,4 @@
-# webstarter
+## webstarter ##
 
 Web application boilerplate for front-end devlepoers.
 
@@ -7,19 +7,20 @@ Installation
   ```$ git clone git@github.com:cenkce/webstarter.git```
 
 - Install Nodejs requirements
-  ```$ npm install```
+  `` `$ npm install` ``
 
 - Install Bower requirements
-  ```$ bower install```
+  `$ bower install`
 
 Usage
 ---
 Build project files
-  ```$ gulp```
+  `$ gulp`
   or
-  ```$ gulp --production```
+  `$ gulp --production`
 
 And preview via BrowserSync
-  ``$ gulp watch``
+  `$ gulp watch`
 
-Assets and 3rd Parties Management With Manifest Json
+- Assets and 3rd Parties Management With Manifest Json
+---
