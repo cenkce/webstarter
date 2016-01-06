@@ -7,9 +7,11 @@ Web application boilerplate for front-end devlepoers.
   `$ git clone git@github.com:cenkce/webstarter.git`
 
 - Install Nodejs requirements
+  
   `$ npm install`
 
 - Install Bower requirements
+
   `$ bower install`
 
 ## Usage ##
