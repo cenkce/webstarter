@@ -20,7 +20,7 @@ Build project files :
   
   or 
   
-  `$ gulp --production`
+  `$ gulp --production=1`
 
 And preview via BrowserSync :
 
