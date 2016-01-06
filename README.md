@@ -30,6 +30,6 @@ And preview via BrowserSync :
 
 ## Assets and Vendor Build Management : ##
 
-Using bower and manifest.json
+Use bower and manifest.json
 
 
