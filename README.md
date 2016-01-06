@@ -26,4 +26,8 @@ And preview via BrowserSync :
 
   `$ gulp watch`
 
-## Assets and 3rd Parties Management With Manifest Json : ##
+## Assets and Vendor Build Management : ##
+
+Using bower and manifest.json
+
+
