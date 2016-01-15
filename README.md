@@ -35,7 +35,7 @@ Use bower and manifest.json
 manifest.json Example:
 
 
-'{
+```javascript{
    "dependencies": {
      "vendor.js": {
        "files": [
@@ -85,6 +85,7 @@ manifest.json Example:
        "useES2015": true
      }
    }
- }'
+ }
+ ```
 
 
