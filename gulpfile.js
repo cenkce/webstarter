@@ -4,7 +4,10 @@ var browserSync  = require('browser-sync').create();
 var concat       = require('gulp-concat');
 var flatten      = require('gulp-flatten');
 var gulpif       = require('gulp-if');
-var changed      = require('gulp-changed');
+var _            = require('lodash');
+
+//var changed      = require('gulp-changed');
+
 var gulp         = require('gulp');
 var lazypipe     = require('lazypipe');
 var minifyCss    = require('gulp-minify-css');
@@ -118,7 +121,7 @@ var cssTasks = function (filename) {
 
 // Styles
 // 'gulp styles' -> Compiles, combines, and optimizes Bower CSS and project CSS.
-gulp.task('styles',['wiredep'], function() {
+gulp.task('styles', function() {
     var _merge = merge();
     manifest.forEachDependency('css', function(dep) {
         var cssTasksInstance = cssTasks(dep.name);
@@ -141,14 +144,28 @@ gulp.task('styles',['wiredep'], function() {
 // Build App Scripts
 gulp.task('js:app', function() {
     var _merge = merge();
-    manifest.forEachDependency('js', function(dep) {
-        _merge.add(
-            gulp.src(dep.globs)
-                .pipe(
-                jsDevTasks(dep.name, dep.path)()
-            )
-        );
-    });
+    var dep = manifest.getDependencyByName('app.js');
+    _merge.add(
+        gulp.src(dep.globs)
+            .pipe(
+            jsDevTasks(dep.name, dep.path)()
+        )
+    );
+
+    return _merge
+        .pipe(gulp.dest(path.dist));
+});
+
+// Build Vendor Scripts
+gulp.task('js:vendor', function() {
+    var _merge = merge();
+    var dep = manifest.getDependencyByName('vendor.js');
+    _merge.add(
+        gulp.src(dep.globs)
+            .pipe(
+            jsDevTasks(dep.name, dep.path)()
+        )
+    );
     return _merge
         .pipe(gulp.dest(path.dist));
 });
@@ -202,19 +219,19 @@ gulp.task('apiserver', function (cb) {
 // ### Wiredep
 // `gulp wiredep` - Automatically inject Less and Sass Bower dependencies. See
 // https://github.com/taptapship/wiredep
-gulp.task('wiredep', function() {
-    var wiredep = require('wiredep').stream;
+/*
+ gulp.task('wiredep', function() {
+ var wiredep = require('wiredep').stream;
 
-    return gulp.src(project.css)
-        .pipe(wiredep())
-        .pipe(changed(path.source + 'styles', {
-            hasChanged: changed.compareSha1Digest
-        }))
-        .pipe(gulp.dest(path.source + 'styles'));
-});
+ return gulp.src('./index.html')
+ .pipe(wiredep())
+ .pipe(gulp.dest(path.dist ));
+ });
+ */
 
 gulp.task('watch', function() {
     gulp.start('apiserver');
+
     browserSync.init({
         //server: "./",
         proxy: "http://localhost:5000",
@@ -222,13 +239,16 @@ gulp.task('watch', function() {
         production : false,
         debug: true
     });
+
     gulp.watch(['assets/sass/**'], ['styles']);
-    gulp.watch(['app/**'], ['jshint', 'js:app']);
+    gulp.watch(['app/**'], ['jshint','js:app']);
     gulp.watch(['assets/fonts/**'], ['fonts']);
     gulp.watch(['assets/images/**'], ['images']);
+    gulp.watch(['bower.json'], ['build']);
+    gulp.watch(['assets/manifest.json'], ['build']);
 });
 
-gulp.task('build', ['styles', 'js:app', 'fonts', 'images']);
+gulp.task('build', ['styles', 'js:app', 'js:vendor', 'fonts', 'images']);
 
 gulp.task('default', ['clean'], function () {
     gulp.start('build');
