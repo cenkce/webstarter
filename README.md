@@ -32,4 +32,59 @@ And preview via BrowserSync :
 
 Use bower and manifest.json
 
+manifest.json Example:
+
+
+'{
+   "dependencies": {
+     "vendor.js": {
+       "files": [
+       ],
+       "vendor": [],
+       "bower": ["jquery",
+                 "modernizr",
+                 "bootstrap-sass-official",
+                 "angular",
+                 "angular-ui-router",
+                 "angular-animate",
+                 "angular-resource",
+                 "almond"
+           ],
+       "main": true
+     },
+     "app.js": {
+       "files": [
+       ],
+       "vendor": [
+         "./app/**/*.js"
+       ],
+       "main": true
+     },
+     "main.css": {
+       "files": [
+         "less/main.less",
+         "sass/main.scss",
+         "css/**/*.css"
+       ],
+       "main": true
+     },
+     "fonts": {
+       "files": ["fonts/**/**"]
+     },
+     "images": {
+       "files": ["images/**/**"]
+     }
+   },
+   "paths": {
+     "source": "assets/",
+     "dist": "dist/"
+   },
+   "config": {
+     "config": {
+       "devUrl": "http://example.dev",
+       "useES2015": true
+     }
+   }
+ }'
+
 
