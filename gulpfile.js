@@ -52,7 +52,7 @@ var globs = manifest.globs;
 // - `project.css` - Array of first-party CSS assets.
 var project = manifest.getProjectGlobs();
 
-// Coomon  js dev tasks
+// Reusable js tasks
 var jsDevTasks = function (buildName, path) {
     return lazypipe()
         .pipe(function () {
@@ -72,6 +72,7 @@ var jsDevTasks = function (buildName, path) {
         });
 };
 
+// Reusable css tasks
 var cssTasks = function (filename) {
     return lazypipe()
         .pipe(function () {
