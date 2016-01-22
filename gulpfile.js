@@ -31,7 +31,8 @@ var path = manifest.paths;
 var config = manifest.config || {};
 config.production = argv.production === '1';
 
-console.log(config.production , argv.production);
+if(config.production)
+console.log(' >>> production mode enabled');
 
 // `globs` - These ultimately end up in their respective `gulp.src`.
 // - `globs.js` - Array of asset-builder JS dependency objects. Example:
@@ -52,7 +53,7 @@ var globs = manifest.globs;
 // - `project.css` - Array of first-party CSS assets.
 var project = manifest.getProjectGlobs();
 
-// Reusable js tasks
+// Coomon  js dev tasks
 var jsDevTasks = function (buildName, path) {
     return lazypipe()
         .pipe(function () {
@@ -60,44 +61,43 @@ var jsDevTasks = function (buildName, path) {
         })
         .pipe(concat, buildName)
         .pipe(function(){
-            return uglify({
-                compress: {
-                    'drop_debugger': true
-                }
-            });
-        }
-    )
+                return uglify({
+                    compress: {
+                        'drop_debugger': true
+                    }
+                });
+            }
+        )
         .pipe(function () {
             return gulpif(!config.production, sourcemaps.write('./'));
         });
 };
 
-// Reusable css tasks
 var cssTasks = function (filename) {
     return lazypipe()
         .pipe(function () {
             return gulpif(!config.production, sourcemaps.init());
         })
-        /*
-         .pipe(function() {
-         return gulpif('*.less', less());
-         })
-         */
+/*
+        .pipe(function() {
+            return gulpif('*.less', less());
+        })
+*/
         .pipe(function () {
-            return gulpif('*.scss',
-                sass({
-                    outputStyle: 'nested',
-                    precision: 10,
-                    includePaths: ['.'],
-                    errLogToConsole: !config.production
-                })
-            );
-        }
-    )
+                return gulpif('*.scss',
+                    sass({
+                        outputStyle: 'nested',
+                        precision: 10,
+                        includePaths: ['.'],
+                        errLogToConsole: !config.production
+                    })
+                );
+            }
+        )
         .pipe(autoprefixer, {
             browsers: [
                 'last 2 versions',
-                'ie 11',
+                'ie 10',
                 'android 2.3',
                 'android 4',
                 'opera 12'
@@ -110,11 +110,11 @@ var cssTasks = function (filename) {
         })
         .pipe(concat, filename)
         .pipe(function () {
-            return gulpif(!config.production,
-                sourcemaps.write('.')
-            );
-        }
-    )
+                return gulpif(!config.production,
+                                sourcemaps.write('.')
+                                );
+                }
+        )
         //.pipe(gulpif(config.production, rev()))
         .pipe(gulp.dest, path.dist);
 };
@@ -126,26 +126,27 @@ gulp.task('styles', function() {
     var _merge = merge();
     manifest.forEachDependency('css', function(dep) {
         var cssTasksInstance = cssTasks(dep.name);
-        /*
-         cssTasksInstance.on('error', function(err) {
-         console.error(err.message);
-         this.emit('end');
-         });
-         */
+/*
+            cssTasksInstance.on('error', function(err) {
+                console.error(err.message);
+                this.emit('end');
+            });
+*/
         _merge
             .add(gulp.src(dep.globs, {base: 'styles'})
-                .pipe(
-                cssTasksInstance()
-            )
-        );
+                    .pipe(
+                        cssTasksInstance()
+                    )
+            );
     });
     return _merge.pipe(gulp.dest(path.dist));
 });
 
-// Build App Scripts
-gulp.task('js:app', function() {
+
+// Builds dependencies, spcified in manifest.json
+function buildJsDependencies(name){
     var _merge = merge();
-    var dep = manifest.getDependencyByName('app.js');
+    var dep = manifest.getDependencyByName(name);
     _merge.add(
         gulp.src(dep.globs)
             .pipe(
@@ -155,20 +156,17 @@ gulp.task('js:app', function() {
 
     return _merge
         .pipe(gulp.dest(path.dist));
+}
+
+// Build App Scripts
+gulp.task('js:app', function() {
+    buildJsDependencies('app.js');
 });
 
 // Build Vendor Scripts
 gulp.task('js:vendor', function() {
-    var _merge = merge();
-    var dep = manifest.getDependencyByName('vendor.js');
-    _merge.add(
-        gulp.src(dep.globs)
-            .pipe(
-            jsDevTasks(dep.name, dep.path)()
-        )
-    );
-    return _merge
-        .pipe(gulp.dest(path.dist));
+    buildJsDependencies('jquery.js');
+    buildJsDependencies('vendor.js');
 });
 
 // Fonts
@@ -179,6 +177,7 @@ gulp.task('fonts', function() {
         .pipe(browserSync.stream());
 });
 
+//Optimizes and moves asset images
 gulp.task('images', function() {
     return gulp.src('assets/images/**/**')
         .pipe(imagemin({
@@ -221,14 +220,14 @@ gulp.task('apiserver', function (cb) {
 // `gulp wiredep` - Automatically inject Less and Sass Bower dependencies. See
 // https://github.com/taptapship/wiredep
 /*
- gulp.task('wiredep', function() {
- var wiredep = require('wiredep').stream;
+gulp.task('wiredep', function() {
+    var wiredep = require('wiredep').stream;
 
- return gulp.src('./index.html')
- .pipe(wiredep())
- .pipe(gulp.dest(path.dist ));
- });
- */
+    return gulp.src('./index.html')
+        .pipe(wiredep())
+        .pipe(gulp.dest(path.dist ));
+});
+*/
 
 gulp.task('watch', function() {
     gulp.start('apiserver');
@@ -242,7 +241,7 @@ gulp.task('watch', function() {
     });
 
     gulp.watch(['assets/sass/**'], ['styles']);
-    gulp.watch(['app/**'], ['jshint','js:app']);
+    gulp.watch(['app/**'], ['js:app']);
     gulp.watch(['assets/fonts/**'], ['fonts']);
     gulp.watch(['assets/images/**'], ['images']);
     gulp.watch(['bower.json'], ['build']);
