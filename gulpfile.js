@@ -4,7 +4,6 @@ var browserSync  = require('browser-sync').create();
 var concat       = require('gulp-concat');
 var flatten      = require('gulp-flatten');
 var gulpif       = require('gulp-if');
-var _            = require('lodash');
 
 //var changed      = require('gulp-changed');
 
@@ -19,8 +18,12 @@ var imagemin     = require('gulp-imagemin');
 var tap          = require('gulp-tap');
 var nodemon      = require('gulp-nodemon');
 var merge        = require('merge-stream');
+var plumber      = require('gulp-plumber');
+var git          = require('gulp-git');
 
 var manifest = require('asset-builder')('./assets/manifest.json');
+
+var versionAfterBump;
 
 // `path` - Paths to base asset directories. With trailing slashes.
 // - `path.source` - Path to the source files. Default: `assets/`
@@ -29,10 +32,11 @@ var path = manifest.paths;
 
 // `config` - Store arbitrary configuration values here.
 var config = manifest.config || {};
-config.production = argv.production === '1';
+
+config.production = argv.production === 1;
 
 if(config.production)
-console.log(' >>> production mode enabled');
+    console.log(' >>> production mode enabled');
 
 // `globs` - These ultimately end up in their respective `gulp.src`.
 // - `globs.js` - Array of asset-builder JS dependency objects. Example:
@@ -53,9 +57,10 @@ var globs = manifest.globs;
 // - `project.css` - Array of first-party CSS assets.
 var project = manifest.getProjectGlobs();
 
-// Coomon  js dev tasks
+// Common js dev tasks
 var jsDevTasks = function (buildName, path) {
     return lazypipe()
+        .pipe(plumber)
         .pipe(function () {
             return gulpif(!config.production, sourcemaps.init());
         })
@@ -70,11 +75,13 @@ var jsDevTasks = function (buildName, path) {
         )
         .pipe(function () {
             return gulpif(!config.production, sourcemaps.write('./'));
-        });
+        })
+        .pipe(browserSync.stream);;
 };
 
 var cssTasks = function (filename) {
     return lazypipe()
+        .pipe(plumber)
         .pipe(function () {
             return gulpif(!config.production, sourcemaps.init());
         })
@@ -116,7 +123,8 @@ var cssTasks = function (filename) {
                 }
         )
         //.pipe(gulpif(config.production, rev()))
-        .pipe(gulp.dest, path.dist);
+        .pipe(gulp.dest, path.dist)
+        .pipe(browserSync.stream);
 };
 
 
@@ -126,12 +134,6 @@ gulp.task('styles', function() {
     var _merge = merge();
     manifest.forEachDependency('css', function(dep) {
         var cssTasksInstance = cssTasks(dep.name);
-/*
-            cssTasksInstance.on('error', function(err) {
-                console.error(err.message);
-                this.emit('end');
-            });
-*/
         _merge
             .add(gulp.src(dep.globs, {base: 'styles'})
                     .pipe(
@@ -147,6 +149,8 @@ gulp.task('styles', function() {
 function buildJsDependencies(name){
     var _merge = merge();
     var dep = manifest.getDependencyByName(name);
+    if(dep == undefined)
+        return;
     _merge.add(
         gulp.src(dep.globs)
             .pipe(
@@ -158,18 +162,18 @@ function buildJsDependencies(name){
         .pipe(gulp.dest(path.dist));
 }
 
-// Build App Scripts
+// Builds App Scripts
 gulp.task('js:app', function() {
     buildJsDependencies('app.js');
 });
 
-// Build Vendor Scripts
+// Builds Vendor Scripts
 gulp.task('js:vendor', function() {
     buildJsDependencies('jquery.js');
     buildJsDependencies('vendor.js');
 });
 
-// Fonts
+// Moves Fonts to dist
 gulp.task('fonts', function() {
     return gulp.src(globs.fonts)
         .pipe(flatten())
@@ -194,7 +198,8 @@ gulp.task('jshint', function() {
     return gulp.src(['gulpfile.js','./app/**'])
         .pipe(jshint())
         .pipe(jshint.reporter('jshint-stylish'))
-        .pipe(gulpif(!config.production, jshint.reporter('fail')));
+        .pipe(jshint.reporter('fail'));
+        //.pipe(gulpif(!config.production, jshint.reporter('fail')));
 });
 
 //Remove all built files
@@ -229,6 +234,30 @@ gulp.task('wiredep', function() {
 });
 */
 
+// Git Release management
+gulp.task('release:commit', ['release:rebuild'], function() {
+    return gulp.src(['./package.json', 'dist/**/*'])
+        .pipe(git.add())
+        .pipe(git.commit(versionAfterBump));
+});
+
+gulp.task('release:tag', ['release:commit'], function() {
+    git.tag(versionAfterBump, versionAfterBump);
+});
+
+gulp.task('release:commit', ['release:rebuild'], function() {
+    return gulp.src(['./package.json', 'dist/**/*'])
+        .pipe(git.add())
+        .pipe(git.commit(versionAfterBump));
+});
+
+gulp.task('release:tag', ['release:commit'], function() {
+    git.tag(versionAfterBump, versionAfterBump);
+});
+
+// End of the git release management
+
+
 gulp.task('watch', function() {
     gulp.start('apiserver');
 
@@ -253,3 +282,5 @@ gulp.task('build', ['styles', 'js:app', 'js:vendor', 'fonts', 'images']);
 gulp.task('default', ['clean'], function () {
     gulp.start('build');
 });
+
+
